@@ -12,7 +12,7 @@ the ouptute will be in a created folder **tle_outputs**:
 
 To Run:
 
-python .\TLE_PostProcessing.py
+- python .\TLE_PostProcessing.py
 
 
 Author: Ehsan Nasiri
