@@ -3,7 +3,7 @@
 
 TEL analysis across all sheets:
 
-the ouptute will be a folder **tle_outputs**:
+the ouptute will be in a created folder **tle_outputs**:
 
      - Within the filder there are subfolder for each sheet with the plots and summary csv file.
 
