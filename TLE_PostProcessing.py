@@ -174,10 +174,11 @@ def best_fit_direction(pts3x3: np.ndarray) -> np.ndarray:
 #     c = float(np.clip(np.dot(v, w), -1.0, 1.0))
 #     ang = math.acos(c)
 #     return math.degrees(ang) if degrees else ang
+
 def acute_angle_between(u, v):
     u = u / max(np.linalg.norm(u), np.finfo(float).eps)
     v = v / max(np.linalg.norm(v), np.finfo(float).eps)
-    c = float(np.clip(np.abs(np.dot(u, v)), -1.0, 1.0))   # abs => axis treated as undirected
+    c = float(np.clip(np.abs(np.dot(u, v)), -1.0, 1.0))  
     return math.degrees(math.acos(c))
 
 def ranksum_safe(a: np.ndarray, b: np.ndarray) -> float:
@@ -220,7 +221,6 @@ def set_axes_equal_3d(ax, pts: np.ndarray):
     ax.set_zlim(zmid - max_range, zmid + max_range)
 
 # -------------------- per-sheet analysis --------------------
-
 def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     """
     Returns:
@@ -347,7 +347,6 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     T = pd.DataFrame(results_rows, columns=["User","No","group","TLE_center","TLE_surface","TLEx","TLEy","AE_deg"])
 
     # ---------------- Figures ----------------
-
     # 3D combined plot
     fig3 = plt.figure(figsize=(8, 6))
     ax3 = fig3.add_subplot(111, projection="3d")
@@ -598,5 +597,6 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
 
