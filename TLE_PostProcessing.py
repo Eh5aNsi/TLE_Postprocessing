@@ -15,7 +15,7 @@ Master outputs:
   ==============================================================
   
   Author: [Ehsan Nasiri]
-  Date: Oct. 2025
+  Date: Oct. 2025 --> modified Nov. 11
   
   Email:[Ehsan.Nasiri@dartmouth.edu]
   
@@ -49,6 +49,7 @@ C_NO  = np.array([0.0000, 0.4470, 0.7410])  # blue
 C_NAV = np.array([0.2000, 0.6000, 0.2000])  # green
 
 ROOT_OUTDIR = "tle_outputs"
+PIVOT_BACKOFF_MM = 37.56
 
 # -------------------- Utilities --------------------
 
@@ -167,12 +168,17 @@ def best_fit_direction(pts3x3: np.ndarray) -> np.ndarray:
         return np.array([1.0, 0.0, 0.0])
     return d / nrm
 
-def angle_between(v: np.ndarray, w: np.ndarray, degrees: bool = True) -> float:
+# def angle_between(v: np.ndarray, w: np.ndarray, degrees: bool = True) -> float:
+#     v = v / max(np.linalg.norm(v), np.finfo(float).eps)
+#     w = w / max(np.linalg.norm(w), np.finfo(float).eps)
+#     c = float(np.clip(np.dot(v, w), -1.0, 1.0))
+#     ang = math.acos(c)
+#     return math.degrees(ang) if degrees else ang
+def acute_angle_between(u, v):
+    u = u / max(np.linalg.norm(u), np.finfo(float).eps)
     v = v / max(np.linalg.norm(v), np.finfo(float).eps)
-    w = w / max(np.linalg.norm(w), np.finfo(float).eps)
-    c = float(np.clip(np.dot(v, w), -1.0, 1.0))
-    ang = math.acos(c)
-    return math.degrees(ang) if degrees else ang
+    c = float(np.clip(np.abs(np.dot(u, v)), -1.0, 1.0))   # abs => axis treated as undirected
+    return math.degrees(math.acos(c))
 
 def ranksum_safe(a: np.ndarray, b: np.ndarray) -> float:
     a = np.asarray(a, float)
@@ -307,14 +313,18 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
         for k in range(n):
             P1 = P1s[k, :]; P2 = P2s[k, :]; P3 = P3s[k, :]; Bb = B[k, :]
             d  = best_fit_direction(np.vstack([P1, P2, P3]))
-            v3 = Bb - P1
+            # --- TLE (unchanged: TIP-based) ---
+            v3  = Bb - P1                   # tip → bead
             v3x = np.dot(v3, d) * d
             v3y = v3 - v3x
 
             TLE_center[k] = np.linalg.norm(v3)
             TLEx[k]       = abs(np.dot(v3, d))
             TLEy[k]       = np.linalg.norm(v3y)
-            AEdeg[k]      = angle_between(d, v3, degrees=True)
+            
+            s = 1.0 if np.dot(P3 - P1, d) >= 0 else -1.0
+            W = P1 + s * PIVOT_BACKOFF_MM * d      # pivot point along the shaft
+            AEdeg[k] = acute_angle_between(d, Bb - W)  #  [0, 90]
 
         TLE_surface = TLE_center - bead_r
 
@@ -389,30 +399,55 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
         P1s = all_P1[b]; P2s = all_P2[b]; P3s = all_P3[b]; B = all_B[b]; nos = all_No[b]
         for k in range(B.shape[0]):
             d = best_fit_direction(np.vstack([P1s[k,:], P2s[k,:], P3s[k,:]]))
-            panels.append((P1s[k,:], P2s[k,:], P3s[k,:], B[k,:], d, int(nos[k])))
+            short = "No" if b == 0 else "Nav"   # compact group tag
+            clr   = colors[b]                    # C_NO or C_NAV
+            panels.append((P1s[k,:], P2s[k,:], P3s[k,:], B[k,:], d, int(nos[k]), short, clr))
 
     N = len(panels)
     ncols = min(7, N) if N > 0 else 1
     nrows = int(np.ceil(N / ncols))
     figp = plt.figure(figsize=(1.8*ncols, 1.8*nrows))
-    for i, (P1, P2, P3, Bp, d, no) in enumerate(panels, start=1):
-        ax = figp.add_subplot(nrows, ncols, i, projection="3d")
-        ax.scatter([P1[0], P2[0], P3[0], Bp[0]],
-                   [P1[1], P2[1], P3[1], Bp[1]],
-                   [P1[2], P2[2], P3[2], Bp[2]],
-                   marker='o', s=16, facecolors='none', edgecolors=[C_NO], linewidths=1.0)
 
+    for i, (P1, P2, P3, Bp, d, no, short, clr) in enumerate(panels, start=1):
+        ax = figp.add_subplot(nrows, ncols, i, projection="3d")
+
+        # points (color by group)
+        ax.scatter([P1[0], P2[0], P3[0], Bp[0]],
+                [P1[1], P2[1], P3[1], Bp[1]],
+                [P1[2], P2[2], P3[2], Bp[2]],
+                marker='o', s=16, facecolors='none', edgecolors=[clr], linewidths=1.0)
+
+        # shaft line (color by group)
         t_proj = np.array([0.0, np.dot(P2-P1, d), np.dot(P3-P1, d), np.dot(Bp-P1, d)])
         t = np.linspace(t_proj.min()-10, t_proj.max()+10, 60)
         L = P1 + np.outer(t, d)
-        ax.plot(L[:,0], L[:,1], L[:,2], 'r-', linewidth=1.2)
+        ax.plot(L[:,0], L[:,1], L[:,2], '-', linewidth=1.2, color=clr)
 
-        ax.set_title(f'Pin {no} Axis and Bead', fontsize=8)
+        # compact in-plot tag near the bead
+        ax.text(Bp[0], Bp[1], Bp[2], f'{short}-{no}', color=clr, fontsize=7, fontweight='bold')
+
+        # panel title shows group + row number
+        ax.set_title(f'{short} · Pin {no}', fontsize=8)
+
         ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
         set_axes_equal_3d(ax, np.vstack([P1, P2, P3, Bp, L]))
-    figp.tight_layout()
-    figp.savefig(os.path.join(outdir, f'pin_axes_panels_{safename(sheet_name)}.png'), dpi=200)
+
+    # small legend and title
+    legend_handles = [
+        plt.Line2D([0],[0], color=C_NO,  lw=2, label='NoNav'),
+        plt.Line2D([0],[0], color=C_NAV, lw=2, label='Nav'),
+    ]
+    figp.legend(handles=legend_handles, loc='lower center', ncol=2, bbox_to_anchor=(0.5, 0.0))
+    figp.suptitle(f'Pin Axes Panels — {sheet_name}', fontsize=10)
+
+    # figp.tight_layout(rect=[0, 0.06, 1, 0.98])  # room for legend & title
+    # figp.savefig(os.path.join(outdir, f'pin_axes_panels_{safename(sheet_name)}.png'), dpi=200)
+    
+    figp.subplots_adjust(left=0.02, right=0.98, top=0.90, bottom=0.16)
+    figp.savefig(os.path.join(outdir, f'pin_axes_panels_{safename(sheet_name)}.png'),
+             dpi=200, bbox_inches='tight')
     plt.close(figp)
+
 
     # Grouped bar plot with AE stars
     TLE_no = TLE_group[0]["no"];  AE_no = TLE_group[0]["ae"]
@@ -479,11 +514,15 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     # p-values
     p_tle = ranksum_safe(TLE_no, TLE_nv)
     p_ang = ranksum_safe(AE_no,  AE_nv)
-    fig.text(0.5, 0.04, f'User: {sheet_name}    p(TLE)={p_tle:.4f}    p(Angle)={p_ang:.4f}',
-             ha='center', fontsize=11)
-
-    fig.tight_layout(rect=[0, 0.05, 1, 1])
-    fig.savefig(os.path.join(outdir, f'TLE_bars_two_trials_{safename(sheet_name)}.png'), dpi=200)
+    # fig.text(0.5, 0.04, f'User: {sheet_name}    p(TLE)={p_tle:.4f}    p(Angle)={p_ang:.4f}',
+    #          ha='center', fontsize=11)
+    # fig.tight_layout(rect=[0, 0.05, 1, 1])
+    # fig.savefig(os.path.join(outdir, f'TLE_bars_two_trials_{safename(sheet_name)}.png'), dpi=200)
+    axL.text(0.5, -0.22, f'User: {sheet_name}    p(TLE)={p_tle:.4f}    p(Angle)={p_ang:.4f}',
+         transform=axL.transAxes, ha='center', fontsize=11)
+    fig.subplots_adjust(left=0.10, right=0.96, top=0.90, bottom=0.28)
+    fig.savefig(os.path.join(outdir, f'TLE_bars_two_trials_{safename(sheet_name)}.png'),
+                dpi=200, bbox_inches='tight')
     plt.close(fig)
 
     # Save per-sheet CSV
@@ -559,6 +598,5 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
-
 
 
