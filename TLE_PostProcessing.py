@@ -38,7 +38,7 @@ except Exception:
 
 # -------------------- Config  --------------------
 DEFAULT_WORKBOOK = "TLE Data.xlsx"  # chnage the file name if necessary!!
-STUDY_NAME = "Throat Model Target Localization"
+STUDY_NAME = "Throat Model Target Localization" #change the file name if necessary...
 BEAD_DIAMETER_MM = 2.381  # mm
 YMAX_LEFT = 9             # mm (bars axis)
 YMAX_RIGHT = 180          # deg (AE axis)
@@ -598,6 +598,7 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
 
 
