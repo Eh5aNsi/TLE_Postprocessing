@@ -1,7 +1,7 @@
 # TLE_Postprocessing
 
 
-**Target Localization Error (TLE) Analysis**, in "Robotic Surgery" / Image Guided Robotic Surgeries (IGRS):
+**Target Localization Error (TLE) Analysis**, in "Robotic Surgery" / "Image Guided Robotic Surgeries (IGRS)":
 
 the ouptute will be in a created folder **TLE_Outputs**:
 
