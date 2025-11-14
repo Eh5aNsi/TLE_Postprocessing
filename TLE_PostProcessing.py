@@ -175,7 +175,7 @@ def best_fit_direction(pts3x3: np.ndarray) -> np.ndarray:
 #     ang = math.acos(c)
 #     return math.degrees(ang) if degrees else ang
 
-def acute_angle_between(u, v):
+def _angle_between(u, v):
     u = u / max(np.linalg.norm(u), np.finfo(float).eps)
     v = v / max(np.linalg.norm(v), np.finfo(float).eps)
     c = float(np.clip(np.abs(np.dot(u, v)), -1.0, 1.0))  
@@ -324,7 +324,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
             
             s = 1.0 if np.dot(P3 - P1, d) >= 0 else -1.0
             W = P1 + s * PIVOT_BACKOFF_MM * d      # pivot point along the shaft
-            AEdeg[k] = acute_angle_between(d, Bb - W)  #  [0, 90]
+            AEdeg[k] = _angle_between(d, Bb - W)  #  [0, 90]
 
         TLE_surface = TLE_center - bead_r
 
@@ -597,6 +597,7 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
 
 
