@@ -40,7 +40,7 @@ except Exception:
 DEFAULT_WORKBOOK = "TLE Data.xlsx"  # chnage the file name if necessary!!
 STUDY_NAME = "Throat Model Target Localization" #change the file name if necessary...
 BEAD_DIAMETER_MM = 2.381  # mm
-PIVOT_BACKOFF_MM = 37.56
+PIVOT_BACKOFF_MM = 37.56  # mm
 YMAX_LEFT = 9             # mm (bars axis)
 YMAX_RIGHT = 180          # deg (AE axis)
 GUIDE1 = 3                # mm
@@ -598,4 +598,5 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
