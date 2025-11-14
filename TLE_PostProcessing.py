@@ -1,5 +1,5 @@
 """
-TLE analysis across sheets.
+TLE analysis
 
 Outputs per sheet:
   tle_outputs/<SheetName>/
@@ -37,7 +37,7 @@ except Exception:
     _HAVE_SCIPY = False
 
 # -------------------- Config  --------------------
-DEFAULT_WORKBOOK = "TLE Data.xlsx"  # these needed to be changed!!!!
+DEFAULT_WORKBOOK = "TLE Data.xlsx"  # chnage the file name if necessary!!
 STUDY_NAME = "Throat Model Target Localization"
 BEAD_DIAMETER_MM = 2.381  # mm
 YMAX_LEFT = 9             # mm (bars axis)
@@ -313,7 +313,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
         for k in range(n):
             P1 = P1s[k, :]; P2 = P2s[k, :]; P3 = P3s[k, :]; Bb = B[k, :]
             d  = best_fit_direction(np.vstack([P1, P2, P3]))
-            # --- TLE (unchanged: TIP-based) ---
+            # --- TLE (TIP-based) ---
             v3  = Bb - P1                   # tip → bead
             v3x = np.dot(v3, d) * d
             v3y = v3 - v3x
@@ -591,13 +591,10 @@ def main():
                         help="Path to Excel workbook (default: 'TLE Data.xlsx').")
     args = parser.parse_args()
     run_all_users(args.workbook)
+    
 
 if __name__ == "__main__":
     main()
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
-
-
-
-
