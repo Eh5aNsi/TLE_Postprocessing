@@ -474,7 +474,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     axL.axhline(GUIDE1, linestyle="--", linewidth=2, color=C_NO, label="3 mm guide")
     axL.axhline(GUIDE2, linestyle="--", linewidth=2, color="r",   label="5 mm guide")
 
-    # Value labels centered over bars using rect endpoints (robust)
+    # Value labels centered over bars using rect endpoints 
     for i in range(len(rects)):
         height = rects[i].get_height()
         if height > 0:
@@ -598,6 +598,7 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
 
 
