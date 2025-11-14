@@ -231,7 +231,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     if not os.path.isdir(outdir):
         os.makedirs(outdir, exist_ok=True)
 
-    # Read raw cells (no header) 
+    # Read raw cells 
     df = pd.read_excel(workbook_path, sheet_name=sheet_name, header=None, engine=None)
 
     pos_bead = find_all_titles(df, "Bead locations Postop")
@@ -495,7 +495,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     axR.set_ylabel("Angular Error (deg)", fontsize=14, color="k")
     axR.tick_params(axis='y', labelcolor='k')
 
-    # AE x-positions: indices of real bars
+    # AE: indices of real bars
     x_no = x[:n_no]
     x_nv = x[n_no+2:n_no+2+n_nv]
     axR.plot(x_no, AE_no,  '*', markersize=10, color=C_NO,  label="AE (No Nav)")
@@ -517,6 +517,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
     #          ha='center', fontsize=11)
     # fig.tight_layout(rect=[0, 0.05, 1, 1])
     # fig.savefig(os.path.join(outdir, f'TLE_bars_two_trials_{safename(sheet_name)}.png'), dpi=200)
+    
     axL.text(0.5, -0.22, f'User: {sheet_name}    p(TLE)={p_tle:.4f}    p(Angle)={p_ang:.4f}',
          transform=axL.transAxes, ha='center', fontsize=11)
     fig.subplots_adjust(left=0.10, right=0.96, top=0.90, bottom=0.28)
@@ -583,8 +584,7 @@ def run_all_users(workbook: str):
     print("[DONE] Wrote:\n  {}\n  {}".format(Tall_path, S_path))
     return Tall, S
 
-# -------------------- Main() --------------------
-
+#================================== Main() =================================================================
 def main():
     parser = argparse.ArgumentParser(description="Run TLE analysis for all sheets.")
     parser.add_argument("--workbook", "-w", type=str, default=DEFAULT_WORKBOOK,
