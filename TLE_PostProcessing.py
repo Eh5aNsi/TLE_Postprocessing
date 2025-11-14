@@ -324,7 +324,7 @@ def analyze_sheet(sheet_name: str, workbook_path: str, outdir: str):
             
             s = 1.0 if np.dot(P3 - P1, d) >= 0 else -1.0
             W = P1 + s * PIVOT_BACKOFF_MM * d      # pivot point along the shaft
-            AEdeg[k] = _angle_between(d, Bb - W)  #  [0, 90]
+            AEdeg[k] = _angle_between(d, Bb - W)  # Angle Error...
 
         TLE_surface = TLE_center - bead_r
 
@@ -598,5 +598,6 @@ if __name__ == "__main__":
 ###############################################################EN2025#################################################
 
 ######################################################################################################################
+
 
 
